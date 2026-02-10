@@ -7,11 +7,11 @@ js: update-js build-js
 update:
 	wasm32-wasi-cabal update
 
-repl: update
-	wasm32-wasi-cabal repl app -finteractive --repl-options='-fghci-browser -fghci-browser-port=8080'
+repl:
+	wasm32-wasi-cabal repl app -finteractive --repl-options='-fghci-browser -fghci-browser-port=8081'
 
 watch:
-	ghciwatch --after-startup-ghci :main --after-reload-ghci :main --watch . --debounce 50ms --command 'wasm32-wasi-cabal repl app -finteractive --repl-options="-fghci-browser -fghci-browser-port=8080"'
+	ghciwatch --after-startup-ghci :main --after-reload-ghci :main --watch . --debounce 50ms --command 'wasm32-wasi-cabal repl app -finteractive --repl-options="-fghci-browser -fghci-browser-port=8081"'
 
 build:
 	wasm32-wasi-cabal build 
@@ -25,8 +25,8 @@ optim:
 	wasm-opt -all -O2 public/app.wasm -o public/app.wasm
 	wasm-tools strip -o public/app.wasm public/app.wasm
 
-serve:
-	http-server public
+serve: build
+	simple-http-server public
 
 clean:
 	rm -rf dist-newstyle public

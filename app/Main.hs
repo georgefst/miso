@@ -13,6 +13,10 @@ import           Miso.Lens
 import           Miso.String
 import qualified Miso.CSS as CSS
 import           Miso.CSS (StyleSheet)
+
+import Control.Exception
+import Control.Monad
+import Control.Monad.IO.Class
 -----------------------------------------------------------------------------
 data Action
   = AddOne
@@ -32,10 +36,24 @@ main = reload (startApp defaultEvents app)
 #else
 main = startApp defaultEvents app
 #endif
+
+foreign import javascript safe "new Promise(res => setTimeout(res, $1))"
+  js_sleep :: Int -> IO ()
+sleep :: Int -> IO ()
+sleep t = evaluate =<< js_sleep t
+
 -----------------------------------------------------------------------------
 app :: App Int Action
 app = (component 0 updateModel viewModel)
   { styles = [ Sheet sheet ]
+  , subs =
+    [ \sink -> forever $ do
+        sleep 1000
+        -- this clearly isn't wiped, just like Georgefstris on Haskell.nix
+        consoleLog "testing..."
+        -- this, however, doesn't crash like before
+        sink AddOne
+    ]
   }
 -----------------------------------------------------------------------------
 updateModel :: Action -> Effect parent Int Action
@@ -53,7 +71,7 @@ viewModel x = H.div_
   [ H.h1_
     [ P.class_ "counter-title"
     ]
-    [ "🍜 Miso sampler"
+    [ "🍜 Miso r"
     ]
   , H.div_
     [ P.class_ "counter-display"
